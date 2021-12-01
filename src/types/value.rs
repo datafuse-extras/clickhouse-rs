@@ -11,7 +11,7 @@ use chrono_tz::Tz;
 use crate::types::{
     column::{datetime64::to_datetime, Either},
     decimal::{Decimal, NoBits},
-    DateConverter, Enum16, Enum8, SqlType, DateTimeType, HasSqlType
+    DateConverter, DateTimeType, Enum16, Enum8, HasSqlType, SqlType,
 };
 
 use uuid::Uuid;
@@ -102,9 +102,7 @@ impl Value {
             SqlType::DateTime(DateTimeType::DateTime64(_, _)) => {
                 Value::DateTime64(0, (1, Tz::Zulu))
             }
-            SqlType::SimpleAggregateFunction(_, nested) => {
-                Value::default(nested.clone())
-            }
+            SqlType::SimpleAggregateFunction(_, nested) => Value::default(nested.clone()),
             SqlType::DateTime(_) => 0_u32.to_date(Tz::Zulu).into(),
             SqlType::Nullable(inner) => Value::Nullable(Either::Left(inner)),
             SqlType::Array(inner) => Value::Array(inner, Arc::new(Vec::default())),
@@ -177,7 +175,7 @@ impl fmt::Display for Value {
             Value::Decimal(v) => fmt::Display::fmt(v, f),
             Value::Ipv4(v) => {
                 write!(f, "{}", decode_ipv4(v))
-            },
+            }
             Value::Ipv6(v) => {
                 write!(f, "{}", decode_ipv6(v))
             }
@@ -230,7 +228,7 @@ impl convert::From<Value> for SqlType {
             Value::DateTime64(_, params) => {
                 let (precision, tz) = params;
                 SqlType::DateTime(DateTimeType::DateTime64(precision, tz))
-            },
+            }
         }
     }
 }
@@ -535,7 +533,10 @@ mod test {
     fn test_from_datetime_utc() {
         let date_time_value: DateTime<Utc> = Utc.ymd(2014, 7, 8).and_hms(14, 0, 0);
         let v = Value::from(date_time_value);
-        assert_eq!(v, Value::DateTime(date_time_value.timestamp() as u32, Tz::UTC));
+        assert_eq!(
+            v,
+            Value::DateTime(date_time_value.timestamp() as u32, Tz::UTC)
+        );
     }
 
     #[test]
@@ -550,10 +551,7 @@ mod test {
             Value::Date(u16::get_days(date_value), date_value.timezone()),
             d
         );
-        assert_eq!(
-            Value::ChronoDateTime(date_time_value),
-            dt
-        );
+        assert_eq!(Value::ChronoDateTime(date_time_value), dt);
     }
 
     #[test]
