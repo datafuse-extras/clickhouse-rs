@@ -9,7 +9,7 @@ use crate::{
     errors::Result,
     types::{
         column::{column_data::BoxColumnData, nullable::NullableColumnData, ColumnWrapper},
-        SqlType, Value, ValueRef
+        SqlType, Value, ValueRef,
     },
 };
 
@@ -290,7 +290,7 @@ impl<V: IpVersion> ColumnData for IpColumnData<V> {
         let start_index = start * V::size();
         let end_index = end * V::size();
 
-        let slice: &[u8] = &self.inner.as_ref();
+        let slice: &[u8] = self.inner.as_ref();
         encoder.write_bytes(&slice[start_index..end_index]);
     }
 

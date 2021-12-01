@@ -44,5 +44,5 @@ script:
 after_success:
   - |
       if [ "$TRAVIS_RUST_VERSION" == "nightly" ]; then
-        cargo coveralls --exclude-pattern target,clickhouse-rs-cityhash-sys,tests;
+        cargo coveralls --exclude-pattern target,tests;
       fi

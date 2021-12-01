@@ -4,7 +4,7 @@ use crate::{
     binary::{protocol, Encoder},
     client_info,
     errors::Result,
-    types::{Context, Query, Simple, Options},
+    types::{Context, Options, Query, Simple},
     Block,
 };
 
@@ -37,7 +37,7 @@ fn encode_command(cmd: &Cmd) -> Result<Vec<u8>> {
         Cmd::Hello(context) => encode_hello(context),
         Cmd::Ping => Ok(encode_ping()),
         Cmd::SendQuery(query, context) => encode_query(query, context),
-        Cmd::SendData(block, context) => encode_data(&block, context),
+        Cmd::SendData(block, context) => encode_data(block, context),
         Cmd::Union(first, second) => encode_union(first.as_ref(), second.as_ref()),
         Cmd::Cancel => Ok(encode_cancel()),
     }
@@ -100,7 +100,9 @@ fn encode_query(query: &Query, context: &Context) -> Result<Vec<u8>> {
 
     let options = context.options.get()?;
 
-    let settings_format = if context.server_info.revision >= protocol::DBMS_MIN_REVISION_WITH_SETTINGS_SERIALIZED_AS_STRINGS {
+    let settings_format = if context.server_info.revision
+        >= protocol::DBMS_MIN_REVISION_WITH_SETTINGS_SERIALIZED_AS_STRINGS
+    {
         SettingsBinaryFormat::Strings
     } else {
         SettingsBinaryFormat::Old
@@ -125,7 +127,6 @@ fn encode_query(query: &Query, context: &Context) -> Result<Vec<u8>> {
 }
 
 fn serialize_settings(encoder: &mut Encoder, options: &Options, format: SettingsBinaryFormat) {
-
     if let Some(level) = options.readonly {
         encoder.string("readonly");
         if format >= SettingsBinaryFormat::Strings {

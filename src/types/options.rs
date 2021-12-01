@@ -11,9 +11,9 @@ use std::{
 
 use crate::errors::{Error, Result, UrlError};
 #[cfg(feature = "tls")]
-use std::fmt::Formatter;
-#[cfg(feature = "tls")]
 use native_tls;
+#[cfg(feature = "tls")]
+use std::fmt::Formatter;
 use url::Url;
 
 const DEFAULT_MIN_CONNS: usize = 10;
@@ -53,7 +53,7 @@ impl OptionsSource {
                     return unsafe { Ok(Cow::Borrowed(ptr.as_ref().unwrap())) };
                 }
                 State::Url(url) => {
-                    let options = from_url(&url)?;
+                    let options = from_url(url)?;
                     new_state = State::Raw(options);
                 }
             }
@@ -476,15 +476,13 @@ where
             "connection_timeout" => {
                 options.connection_timeout = parse_param(key, value, parse_duration)?
             }
-            "query_timeout" => {
-                options.query_timeout = parse_param(key, value, parse_duration)?
-            },
+            "query_timeout" => options.query_timeout = parse_param(key, value, parse_duration)?,
             "insert_timeout" => {
                 options.insert_timeout = parse_param(key, value, parse_opt_duration)?
             }
             "execute_timeout" => {
                 options.execute_timeout = parse_param(key, value, parse_opt_duration)?
-            },
+            }
             "compression" => options.compression = parse_param(key, value, parse_compression)?,
             #[cfg(feature = "tls")]
             "secure" => options.secure = parse_param(key, value, bool::from_str)?,
@@ -525,7 +523,7 @@ fn get_username_from_url(url: &Url) -> Option<&str> {
 }
 
 fn get_password_from_url(url: &Url) -> Option<&str> {
-    url.password().map(|password| password)
+    url.password()
 }
 
 fn get_database_from_url(url: &Url) -> Result<Option<&str>> {
@@ -614,7 +612,8 @@ mod test {
         let source = "host2:9000,host3:9000";
         let expected = vec![
             Url::from_str("tcp://host2:9000").unwrap(),
-            Url::from_str("tcp://host3:9000").unwrap()];
+            Url::from_str("tcp://host3:9000").unwrap(),
+        ];
         let actual = parse_hosts(source).unwrap();
         assert_eq!(actual, expected)
     }
@@ -710,8 +709,8 @@ mod test {
 
     #[test]
     fn test_parse_compression() {
-        assert_eq!(parse_compression("none").unwrap(), false);
-        assert_eq!(parse_compression("lz4").unwrap(), true);
+        assert!(!parse_compression("none").unwrap());
+        assert!(parse_compression("lz4").unwrap());
         parse_compression("?").unwrap_err();
     }
 }

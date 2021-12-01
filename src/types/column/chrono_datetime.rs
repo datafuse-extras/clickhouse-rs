@@ -6,14 +6,13 @@ use crate::{
     binary::Encoder,
     errors::Result,
     types::{
-        SqlType,
-        DateTimeType,
         column::{
-            column_data::{BoxColumnData, ArcColumnData, ColumnData},
+            column_data::{ArcColumnData, BoxColumnData, ColumnData},
             datetime64::from_datetime,
             nullable::NullableColumnData,
             ArcColumnWrapper, ColumnFrom, ColumnWrapper, Value, ValueRef,
-        }
+        },
+        DateTimeType, SqlType,
     },
 };
 

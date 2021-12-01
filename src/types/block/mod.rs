@@ -3,21 +3,21 @@ use std::{
     default::Default,
     fmt,
     io::{Cursor, Read},
-    os::raw::c_char,
     marker::PhantomData,
+    os::raw::c_char,
 };
 
 use byteorder::{LittleEndian, WriteBytesExt};
 use chrono_tz::Tz;
-use clickhouse_rs_cityhash_sys::city_hash_128;
 use lz4::liblz4::{LZ4_compressBound, LZ4_compress_default};
+use naive_cityhash::cityhash128;
 
 use crate::{
     binary::{protocol, Encoder, ReadEx},
     errors::{Error, FromSqlError, Result},
     types::{
         column::{self, ArcColumnWrapper, Column, ColumnFrom},
-        FromSql, SqlType, ColumnType, Simple, Complex
+        ColumnType, Complex, FromSql, Simple, SqlType,
     },
 };
 
@@ -148,7 +148,7 @@ impl Block {
         Self {
             info: Default::default(),
             columns: vec![],
-            capacity
+            capacity,
         }
     }
 
@@ -352,7 +352,7 @@ impl<K: ColumnType> Block<K> {
                 cursor.write_u32::<LittleEndian>(tmp.len() as u32).unwrap();
             }
 
-            let hash = city_hash_128(&buf);
+            let hash = cityhash128(&buf);
             encoder.write(hash.lo);
             encoder.write(hash.hi);
             encoder.write_bytes(buf.as_ref());
@@ -384,7 +384,7 @@ impl<K: ColumnType> fmt::Debug for Block<K> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let titles: Vec<&str> = self.columns.iter().map(|column| column.name()).collect();
 
-        let cells: Vec<_> = self.columns.iter().map(|col| text_cells(&col)).collect();
+        let cells: Vec<_> = self.columns.iter().map(|col| text_cells(col)).collect();
 
         let titles_len: Vec<_> = titles
             .iter()
