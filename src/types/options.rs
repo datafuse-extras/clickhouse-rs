@@ -53,7 +53,7 @@ impl OptionsSource {
                     return unsafe { Ok(Cow::Borrowed(ptr.as_ref().unwrap())) };
                 }
                 State::Url(url) => {
-                    let options = from_url(&url)?;
+                    let options = from_url(url)?;
                     new_state = State::Raw(options);
                 }
             }
@@ -525,7 +525,7 @@ fn get_username_from_url(url: &Url) -> Option<&str> {
 }
 
 fn get_password_from_url(url: &Url) -> Option<&str> {
-    url.password().map(|password| password)
+    url.password()
 }
 
 fn get_database_from_url(url: &Url) -> Result<Option<&str>> {
@@ -710,8 +710,8 @@ mod test {
 
     #[test]
     fn test_parse_compression() {
-        assert_eq!(parse_compression("none").unwrap(), false);
-        assert_eq!(parse_compression("lz4").unwrap(), true);
+        assert!(!parse_compression("none").unwrap());
+        assert!(parse_compression("lz4").unwrap());
         parse_compression("?").unwrap_err();
     }
 }
